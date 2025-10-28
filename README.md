@@ -1,30 +1,29 @@
-📡 Real-Time Log Streaming Service
+# 📡 Real-Time Log Streaming Service
 
-A high-performance WebSocket-based log monitoring solution (like tail -f but remote) built from scratch without external tail libraries.
+A high-performance WebSocket-based log monitoring solution (like `tail -f` but remote) built from scratch without external tail libraries.
 
-🚀 Features
+## 🚀 Features
 
-Real-time streaming – Logs update instantly through WebSockets
+- **Real-time streaming** – Logs update instantly through WebSockets  
+- **Last N lines on connect** – Shows last 10 lines right away  
+- **Multiple concurrent clients** – Pub/sub architecture supports unlimited viewers  
+- **File rotation handling** – Detects truncated logs and recovers  
+- **Efficient backward reading** – Reads only chunks needed  
+- **Zero external tail libraries** – Pure Node.js Streams + fs  
+- **Graceful shutdown** – Handles SIGTERM cleanly  
 
-Last N lines on connect – Shows last 10 lines right away
+## 🛠️ Tech Stack
 
-Multiple concurrent clients – Pub/sub architecture supports unlimited viewers
+| Layer | Technology |
+|------|------------|
+| Runtime | Node.js |
+| Server | Express.js |
+| WebSocket | ws |
+| File I/O | Native fs module + streams |
 
-File rotation handling – Detects truncated logs and recovers
+## 📁 Project Structure
 
-Efficient backward reading – Reads only chunks needed
-
-Zero external tail libraries – Pure Node.js Streams + fs
-
-Graceful shutdown – Handles SIGTERM cleanly
-
-🛠️ Tech Stack
-Layer	Technology
-Runtime	Node.js
-Server	Express.js
-WebSocket	ws
-File I/O	Native fs module + streams
-📁 Project Structure
+```
 browserStack/
 ├── src/
 │   ├── services/
@@ -35,18 +34,28 @@ browserStack/
 ├── index.js                        # Server entry point
 ├── package.json
 └── README.md
+```
 
-⚡ Quick Start
-Install dependencies
+## ⚡ Quick Start
+
+### Install dependencies
+```bash
 npm install
+```
 
-Run server
+### Run server
+```bash
 node index.js
+```
 
-Open browser
+### Open browser
+```
 http://localhost:3000/log
+```
 
-🎯 Architecture
+## 🎯 Architecture
+
+```
 ┌─────────────┐          WebSocket         ┌──────────────┐
 │   Browser   │◄──────────────────────────│ Express/WS   │
 │   Client    │                           │   Server     │
@@ -63,138 +72,125 @@ http://localhost:3000/log
                                         │   test.log   │
                                         │  (File I/O)  │
                                         └──────────────┘
+```
 
-🔍 Core Logic
+## 🔍 Core Logic
 
-Init
-• Reads file size
-• Starts poll loop (default 1s)
-• Keeps pointer to last read byte
+1. **Init**
+   - Reads file size  
+   - Starts poll loop (default 1s)  
+   - Stores pointer to last read byte  
 
-Last N Lines (reverse read)
-• Reads backwards in 4KB chunks
-• Stops on 10 newlines
-• Sends snapshot to new client
+2. **Last N lines**
+   - Reads file backwards in 4KB chunks  
+   - Counts newlines until 10 found  
+   - Sends snapshot to new client  
 
-Change Detection
-• Compare last known file size to current
-• Streams new bytes to subscribers
+3. **Change Detection**
+   - Compares file size changes  
+   - Streams new bytes to clients  
 
-Log Rotation
-• If file truncated
-• Reset pointer to start
-• Continue reading new content
+4. **Log Rotation**
+   - Detects truncation  
+   - Resets pointer  
+   - Continues watching  
 
-🔌 API
-HTTP
-Method	Endpoint	Description
-GET	/	Health check
-GET	/log	UI for log streaming
-GET	/health	Monitoring status
-WebSocket Messages
-Initial snapshot
+## 🔌 API
+
+### HTTP Endpoints
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/` | Health check |
+| GET | `/log` | Web UI for log stream |
+| GET | `/health` | Status JSON |
+
+### WebSocket Messages
+
+```json
 {
   "type": "initial",
   "data": "last 10 lines..."
 }
+```
 
-Updates
+```json
 {
   "type": "update",
   "data": "new content..."
 }
+```
 
-Errors
+```json
 {
   "type": "error",
   "message": "description"
 }
+```
 
-🧪 Testing
-Manual Check
+## 🧪 Testing
+
+### Manual Test
+```bash
 node index.js
-
+```
 
 Browser:
+```
 http://localhost:3000/log
+```
 
 Append new logs:
-
+```bash
 echo "Test log entry $(date)" >> src/test.log
+```
 
+Watch UI update ✅
 
-See updates instantly ✅
+## ⚙️ Config
 
-Automated
-npm test
+Modify inside `index.js`:
 
-🧠 Smart Design Choices
-Polling vs watchers
-
-Polling chosen for:
-• Cross-platform support
-• Reliability
-• Flexibility
-
-WebSockets
-
-• Low latency
-• Bi-directional
-• Standard browser support
-
-Backward Reading
-
-• Doesn’t read whole file
-• Works even with huge logs
-• Fast + efficient
-
-⚙️ Config
-
-Edit these values in index.js:
-
+```js
 const LOG_FILE_PATH = './src/test.log'
 const PORT = 3000
 
-// In LogTrailerService:
-pollingInterval: 1000 // ms
+// In LogTrailerService
+pollingInterval: 1000  // ms
+```
 
-✅ Edge Cases Covered
-Scenario	Status
-File missing initially	✅
-File rotation (truncate)	✅
-Empty log	✅
-Multiple clients	✅
-Client disconnect	✅
-Safe shutdown	✅
-🚄 Performance
+## ✅ Edge Cases Covered
 
-• Chunk-based reading
-• Streams for incremental updates
-• O(1) subscriber management
-• Optimized polling interval
+| Case | Status |
+|------|--------|
+| File missing initially | ✅ |
+| File truncated | ✅ |
+| Empty log | ✅ |
+| Multiple clients | ✅ |
+| Disconnects | ✅ |
+| SIGTERM graceful shutdown | ✅ |
 
-📌 Future Enhancements
+## 🚄 Performance
 
- Multi-file support
+- Efficient chunked reads  
+- Non-blocking streaming  
+- O(1) pub/sub operations  
 
- Search & filters
+## 📌 Future Enhancements
 
- Auth + permissions
+- [ ] Multi-file monitoring  
+- [ ] Filters + search  
+- [ ] Regex coloring  
+- [ ] Download logs  
+- [ ] Auth + roles  
 
- Download logs
+---
 
- Regex highlights
+## 👨‍💻 Author
 
- Log rotation by inode detection
+Built with ☕ and WebSockets ❤️  
+MIT License
 
-🤝 Contributing
+---
 
-Pull requests welcome! This is a pure implementation challenge of tail -f without any external tailing libraries.
-
-📄 License
-
-MIT
-
-👨‍💻 Author
-
-Built with ☕ and WebSockets ❤️
+⭐ Star this repo if real-time magic excites you! ✨
