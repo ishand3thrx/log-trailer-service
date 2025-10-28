@@ -189,8 +189,8 @@ pollingInterval: 1000  // ms
 ## 👨‍💻 Author
 
 Built with ☕ and WebSockets ❤️  
-MIT License
 
 ---
 
 ⭐ Star this repo if real-time magic excites you! ✨
+
