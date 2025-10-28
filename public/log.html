@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            log viewer
+        </title>
+    </head>
+    <body>
+        <h1>
+            log viewer
+        </h1>
+        <pre id="logs">
+
+        </pre>
+        <script>
+            const logsDiv = document.getElementById('logs')
+            const ws = new WebSocket('ws://localhost:3000')
+            ws.onmessage = (event)=>{
+                const message = JSON.parse(event.data)
+                logsDiv.textContent += message.data
+            }
+        </script>
+    </body>
+
+</html>
